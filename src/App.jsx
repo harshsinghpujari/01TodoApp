@@ -1,7 +1,12 @@
 import React,{ useState,useEffect} from 'react'
+import TodoInput from './components/TodoInput'
+import FilterButtons from './components/FilterButtons'
+import TodoList from './components/TodoList'
+import backgroundImage1 from './assets/background1.jpg'
 import './App.css'
 
 function App() {
+
   const [todo,setTodo] = useState("")
   const [todos,setTodos] = useState(() => {
     try {
@@ -12,12 +17,14 @@ function App() {
       return[];
     }
   })
+
   const [filter,setFilter] = useState("all");
   const [editId,setEditId] = useState(null);
   const [editMsg,setEditMsg] = useState("");
 
+  // handler functions --------
+
   const handleSubmit = () => {
-    
     if(todo.trim() === "")return;
 
     const todoList  = {
@@ -29,14 +36,6 @@ function App() {
     setTodos(prev => [...prev,todoList])
     setTodo("")
   }
-
-  const deleteTodo = (todos,id) => 
-    todos.filter((todo) => todo.id !== id)
-
-  const saveEdit = (msg,id) => 
-    todos.map(todo => todo.id === id? todo.text=msg : todo )
-  
-  
   const handleSave = (msg,id) => {
     setTodos(saveEdit(msg,id));
     setEditId(null);
@@ -49,7 +48,6 @@ function App() {
     setEditId(id);
     setEditMsg(text);
   }
-
   const handleToggle = (id) => {
     setTodos(prev => 
       prev.map(todo => 
@@ -59,13 +57,20 @@ function App() {
     )
   }
 
+  // functions----
+  const deleteTodo = (todos,id) => 
+    todos.filter((todo) => todo.id !== id)
+
+  const saveEdit = (msg,id) => 
+    todos.map(todo => todo.id === id? {...todo,text:msg} : todo )
+  
   const filterTodo = todos.filter((todo) => {
     if(filter === "active") return !todo.completed;
     if(filter === "completed") return todo.completed;
     return true;
   });
   
-
+  //was not working---
   // useEffect(()=>{
   //  try {
   //    const data = JSON.parse(localStorage.getItem('todos'))
@@ -78,99 +83,42 @@ function App() {
   //  }
   // },[])
 
+
+  //local Storage
   useEffect(()=>{
     localStorage.setItem('todos',JSON.stringify(todos));
   },[todos])
 
+
   return (
     <>
-
-    <div className='w-full h-screen bg-gray-500 text-white text-2xl p-11'>
-
-        <div className='flex'>
-          <div className='flex flex-col'>
-            <label htmlFor="addTodo">add Todo</label>
-            <input type="text" id='addTodo'
-            value={todo}
-            onChange={(e)=>setTodo(e.target.value)}
-            className='border'/>
-          </div>
-
-          <div>
-              <button 
-              onClick={handleSubmit}
-              className='mt-7 border-2 bg-red-400 p-1 '>Add</button>
-          </div>
-
-          <div>
-            <button 
-            onClick={() => setFilter("all")}
-            className='mt-7 ml-5 mr-3 border bg-amber-600 p-1'>all</button>
-
-            <button
-            onClick={() => setFilter("active")}
-            className='mt-7 ml-5 mr-3 border bg-amber-600 p-1'>active</button>
-
-            <button
-             onClick={() => setFilter("completed")}
-            className='mt-7 ml-5 mr-3 border bg-amber-600 p-1'>completed</button>
-          </div>
-
-        </div>
-
-    <div className='mt-4 w-lg '>
-      {
-        filterTodo.map((todo) => (
-          <div className='flex' key={todo.id}>
-            <input type="checkbox"
-             checked={todo.completed}
-             onChange={() => handleToggle(todo.id)}
-            />
-            {editId === todo.id ? (
-              <div className='flex'>
-                <input 
-                value={editMsg}
-                onChange={(e) => setEditMsg(e.target.value)}
-                type="text"className='border mt-1 p-2 w-full'/>
-                <button
-                onClick={ () => handleSave(editMsg,editId)}
-                className='border p-2 mt-1 bg-green-600'>save</button>
-              </div>
-            ):
-            (
-              <div className='flex'>
-              <p
-                className = {`border mt-1 p-2  w-full ${todo.completed? "line-through text-yellow-500": "text-white"}`}
-                >
-                {todo.text}
-              </p> 
-              <button
-                onClick={() => handleEdit(todo.id,todo.text)}
-                className='border p-2 bg-green-700 mt-1'>
-                edit
-              </button>
-              <button 
-                onClick={() => (handleDelete(todo.id))}
-                className='border p-2 bg-blue-700 mt-1'>Del
-              </button>
-              </div>
-          
-          )}
-            
-
+      <div className='w-full min-h-screen bg-[#1d8cb7] text-white text-2xl p-11 flex justify-center items-start bg-cover bg-center'
+      style={{backgroundImage:`url(${backgroundImage1})`}}>
+        <div className='border-4 w-2xl bg-white/30 
+        backdrop-blur-xl rounded-2xl p-11 items-center flex flex-col overflow-y-auto max-h-[90vh] '>
         
-          </div>
-           
-          
-        ))
-      }
+            <TodoInput 
+              todo={todo}
+              setTodo={setTodo}
+              handleSubmit={handleSubmit}
+            />
 
-     
-      
-    </div>
-     
-    </div>
+            <FilterButtons
+              setFilter = {setFilter}
+            />
 
+            <TodoList
+              todos={filterTodo}
+              editId={editId}
+              editMsg={editMsg}
+              setEditMsg={setEditMsg}
+              handleToggle={handleToggle}
+              handleSave={handleSave}
+              handleEdit={handleEdit}
+              handleDelete={handleDelete}
+            />
+        </div>  
+      </div>
     </>
   )
 }
